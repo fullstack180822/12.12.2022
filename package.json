@@ -6,6 +6,8 @@
   "scripts": {
     "debug": "nodemon index.js",
     "start": "node index.js",
+    "books": "node books_dal.js",
+    "orders": "node orders_dal.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
