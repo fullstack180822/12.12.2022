@@ -2,3 +2,16 @@ i am main branch
 
 // create new repo branch1
 // git clone of the repo
+// open github desktop -- for this repo
+// create main.txt with "hello main"
+// commit + push
+// create new branch -- my_branch
+// create my_branch.txt with "hello branch1"
+// commit push
+// with Githubdesktop switch branches
+// open GitBash of this foler
+// look at the blue name of the branch
+// try from Gitbash: "git switch main"
+// look at the blue
+// try from Gitbash: "git switch my_branch"
+// look at the blue
