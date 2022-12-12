@@ -16,92 +16,97 @@ function open_db(file_name) {
     })
 }
 
-function insert_company(db, data) {
-    const sql_insert = `INSERT INTO COMPANY (ID,NAME,AGE,ADDRESS,SALARY)
-                        VALUES (?, ?, ? ,?, ?);` // [7, 'DAN', 18, 'MEXICO', 32000] == data
-    db.run(sql_insert, data, err => {
-        if (err) {
-            console.log(`ERROR: ${err}`);
-        }
-        else {
-            console.log(`INSERTED ${data}`);
-        }
-    })
-}
-
-function select(db, query) {
-    db.serialize(async () => {
-        console.log(query)
-        await db.each(query, (err, row) => {
+function close_db_async(db) {
+    return new Promise((resolve, reject) => {
+        db.close(err => {
             if (err) {
-                console.log(`ERROR: ${err}`);
+                console.log(err.message);
+                reject(err.message)
             }
             else {
-                console.log(row)
+                console.log('Database connection closed!');
+                resolve()
+            }
+        })
+    })
+}
+function update_salary_by_id_async(db, id, new_salary) {
+    return new Promise(function (resolve, reject) {
+        const sql_update = `UPDATE COMPANY 
+                        SET SALARY = ?
+                        WHERE id = ?`
+        db.run(sql_update, [new_salary, id], err => {
+            if (err) {
+                console.log(`ERROR: ${err}`);
+                reject(err)
+            }
+            else {
+                console.log(`Salary updated to ${new_salary}`);
+                resolve(new_salary)
             }
         })
     })
 }
 
-function close_db(db) {
-    db.close(err => {
-        if (err) {
-            console.log(err.message);
-        }
-        else {
-            console.log('Database connection closed!');
-        }
-    })
-}
-function update_salary_by_id(db, id, new_salary) {
-    const sql_update = `UPDATE COMPANY 
-                        SET SALARY = ?
+function delete_company_by_id_async(db, id) {
+    return new Promise(function (resolve, reject) {
+        const sql_update = `DELETE FROM COMPANY 
                         WHERE id = ?`
-    db.run(sql_update, [new_salary, id], err => {
-        if (err) {
-            console.log(`ERROR: ${err}`);
-        }
-        else {
-            console.log(`Salary updated to ${new_salary}`);
-        }
+        db.run(sql_update, [id], err => {
+            if (err) {
+                console.log(`ERROR: ${err}`);
+                reject(err)
+            }
+            else {
+                console.log(`Deleted record id ${id}`);
+                resolve()
+            }
+        })
     })
 }
 
-function delete_company_by_id(db, id) {
+function select_async(db, query) {
+    return new Promise(function (resolve, reject) {
+        db.all(query, function (err, rows) {
+            if (err) { return reject(err); }
+            resolve(rows);
+        });
+    });
 }
 
-function db_all(db, query){
-    return new Promise(function(resolve,reject){
-        db.all(query, function(err,rows){
-           if(err){return reject(err);}
-           resolve(rows);
-         });
+function insert_company_async(db, data) {
+    return new Promise(function (resolve, reject) {
+        const sql_insert = `INSERT INTO COMPANY (ID,NAME,AGE,ADDRESS,SALARY)
+                            VALUES (?, ?, ? ,?, ?);` // [7, 'DAN', 18, 'MEXICO', 32000] == data
+        db.run(sql_insert, data, err => {
+            if (err) {
+                reject(err)
+            }
+            else {
+                console.log(`INSERTED ${data}`);
+                resolve()
+            }
+        })
     });
 }
 
 async function main() {
-    const db = await open_db(db_file_loc)
-    console.log(db);
-    const result = await db_all(db, "SELECT * from company");
-    console.log(result);
+    try {
+        const db = await open_db(db_file_loc)
+        console.log(db);
+        await insert_company_async(db, [12, 'DAN12', 18, 'MEXICO', 32000])
+        await update_salary_by_id_async(db, 8, (new Date()).getUTCMilliseconds() * 489)
+        const result = await select_async(db, "SELECT * from company");
+        console.log(result);
+        await delete_company_by_id_async(db, 12)
+        await close_db_async(db)
+    }
+    catch (err) {
+        console.log(`ERROR: ${err}`);
+    }
 }
-    //setTimeout(() => insert(db, [7, 'DAN', 18, 'MEXICO', 32000]), 100)
-    //setTimeout(() => insert(db, [8, 'SUZI', 22, 'SAN PAULO', 47775]), 100)
-    //setTimeout(() => insert(db, [9, 'TORRES2', 24, 'SPAIN', 89776]), 100)
-    //setTimeout(() => insert(db, [10, 'TORRES3', 24, 'SPAIN', 89776]), 100)
-    //setTimeout(() => insert(db, [11, 'TORRES4', 24, 'SPAIN', 89776]), 100)
-//    select(db, `SELECT * FROM COMPANY`)
-    //select(db, `SELECT * FROM COMPANY`)
-    //setTimeout(() => console.log('============================================'), 800);
-    //setTimeout(() => select(db, `SELECT * FROM COMPANY WHERE SALARY > 30000`), 1100)
-    //setTimeout(() => update_salary_by_id(db, 1, 100100), 1400)
-    //setTimeout(() => close_db(db), 1700);
-}
-main()
 
-//-- INSERT
-//-- UPDATE (db.run)
-//-- DELETE (db.run)
+main()
 
 
 
